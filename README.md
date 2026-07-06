@@ -287,8 +287,9 @@ Cursor and VS Code AI tools were used to support project setup, documentation, d
 
 ## 12. Demo Video
 
-**Demo Video:** [ClientFlow_Demo.mp4](./ClientFlow_Demo(1)(1).mp4)
-
+**Demo Video:** <video src="./ClientFlow_Demo.mp4" controls width="700">
+  Your browser does not support the video tag.
+</video>
 ---
 
 ## 13. Future Enhancements
