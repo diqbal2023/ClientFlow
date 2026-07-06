@@ -291,7 +291,11 @@ Cursor and VS Code AI tools were used to support project setup, documentation, d
 
 ## 12. Demo Video
 
-**Demo Video:** https://github.com/user-attachments/assets/70a4de83-58d2-42ba-9b78-dcc99568bbde
+**Demo Video:** 
+
+https://github.com/user-attachments/assets/a46fe8f5-5ecb-444b-851a-2a0a3f057b6b
+
+
 
 
 ## 13. Future Enhancements
