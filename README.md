@@ -289,10 +289,6 @@ Cursor and VS Code AI tools were used to support project setup, documentation, d
 
 **Demo Video:** [ClientFlow_Demo.mp4](./ClientFlow_Demo.mp4)
 
-A ~3 minute walkthrough of ClientFlow: registration, login, admin and client dashboards, business/service CRUD, booking requests, and AI features.
-
-Also available on GitHub: [view or download](https://github.com/FAU-AI-HootCamp-Summer-2026/week3-diqbal2023/blob/main/ClientFlow_Demo.mp4).
-
 ---
 
 ## 13. Future Enhancements
