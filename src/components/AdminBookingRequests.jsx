@@ -6,13 +6,39 @@ import {
   formatRequestDate,
   formatRequestStatus,
 } from '../lib/clientRequest'
+import { summarizeBookingRequest } from '../lib/aiClient'
 import { getFriendlyError } from '../lib/formUtils'
 import { supabase } from '../lib/supabaseClient'
+
+function buildSummaryPayload(request, businessName) {
+  return {
+    request_title: request.request_title ?? '',
+    request_details: request.request_details ?? request.client_message ?? '',
+    preferred_date: request.preferred_date ?? '',
+    status: request.status ?? 'pending',
+    service_name: request.services?.name ?? '',
+    business_name: businessName ?? '',
+    client_name: request.profiles?.full_name ?? '',
+    created_at: request.created_at ?? '',
+  }
+}
+
+function hasSummaryContent(request) {
+  return Boolean(
+    request.request_title?.trim() ||
+      request.request_details?.trim() ||
+      request.client_message?.trim(),
+  )
+}
 
 export default function AdminBookingRequests({ business }) {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState(null)
+  const [summarizingId, setSummarizingId] = useState(null)
+  const [summaries, setSummaries] = useState({})
+  const [summaryErrors, setSummaryErrors] = useState({})
+  const [summaryNotices, setSummaryNotices] = useState({})
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
@@ -95,6 +121,48 @@ export default function AdminBookingRequests({ business }) {
     await loadRequests()
   }
 
+  async function handleSummarize(request) {
+    if (!hasSummaryContent(request)) {
+      setSummaryErrors((current) => ({
+        ...current,
+        [request.id]: 'This request needs a title or details before it can be summarized.',
+      }))
+      return
+    }
+
+    setSummarizingId(request.id)
+    setSummaryErrors((current) => ({ ...current, [request.id]: '' }))
+    setSummaryNotices((current) => ({ ...current, [request.id]: '' }))
+
+    try {
+      const result = await summarizeBookingRequest(
+        buildSummaryPayload(request, business?.name),
+      )
+
+      setSummaries((current) => ({
+        ...current,
+        [request.id]: result,
+      }))
+
+      if (result.fallbackUsed) {
+        setSummaryNotices((current) => ({
+          ...current,
+          [request.id]:
+            result.message ||
+            'A basic template was used because AI generation was unavailable.',
+        }))
+      }
+    } catch (summaryError) {
+      setSummaryErrors((current) => ({
+        ...current,
+        [request.id]:
+          summaryError.message || 'Could not summarize this request. Please try again.',
+      }))
+    } finally {
+      setSummarizingId(null)
+    }
+  }
+
   if (!business) {
     return (
       <section className="business-section">
@@ -123,6 +191,8 @@ export default function AdminBookingRequests({ business }) {
               request.status === 'reviewed' || request.status === 'in_progress'
                 ? 'confirmed'
                 : request.status
+            const summary = summaries[request.id]
+            const isSummarizing = summarizingId === request.id
 
             return (
               <li key={request.id} className="service-card">
@@ -152,13 +222,48 @@ export default function AdminBookingRequests({ business }) {
                   <strong>Submitted:</strong> {formatRequestDate(request.created_at)}
                 </p>
 
+                <div className="button-row">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => handleSummarize(request)}
+                    disabled={isSummarizing || updatingId === request.id}
+                  >
+                    {isSummarizing ? 'Summarizing...' : 'Summarize Request'}
+                  </button>
+                </div>
+
+                <FormAlert type="error" message={summaryErrors[request.id]} />
+                <FormAlert type="success" message={summaryNotices[request.id]} />
+
+                {summary && (
+                  <div className="ai-preview-card request-summary-card">
+                    <p>
+                      <strong>Summary:</strong> {summary.summary}
+                    </p>
+                    {summary.key_details?.length > 0 && (
+                      <div>
+                        <strong>Key details:</strong>
+                        <ul className="summary-key-details">
+                          {summary.key_details.map((detail) => (
+                            <li key={detail}>{detail}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <p>
+                      <strong>Suggested next step:</strong> {summary.suggested_next_step}
+                    </p>
+                  </div>
+                )}
+
                 <label className="status-update-label">
                   Update status
                   <div className="status-update-row">
                     <select
                       value={displayStatus}
                       onChange={(event) => handleStatusUpdate(request, event.target.value)}
-                      disabled={updatingId === request.id}
+                      disabled={updatingId === request.id || isSummarizing}
                     >
                       {ADMIN_BOOKING_STATUSES.map((option) => (
                         <option key={option.value} value={option.value}>

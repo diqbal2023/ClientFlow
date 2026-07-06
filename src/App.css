@@ -177,6 +177,15 @@
   margin-top: 1rem;
 }
 
+.request-summary-card {
+  margin-top: 0.75rem;
+}
+
+.summary-key-details {
+  margin: 0.35rem 0 0.75rem 1.25rem;
+  padding: 0;
+}
+
 .brand-color-presets {
   display: flex;
   flex-wrap: wrap;

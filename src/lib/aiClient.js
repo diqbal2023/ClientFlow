@@ -91,7 +91,17 @@ export async function generateRebookingRecommendation(payload) {
   }
 }
 
-/** Summarize a client booking request for the business owner. */
-export function summarizeBookingRequest(payload) {
-  return callAi('bookingRequestSummary', payload)
+/**
+ * Summarize a client booking request for the business admin.
+ *
+ * @returns {Promise<{ summary: string, key_details: string[], suggested_next_step: string, fallbackUsed?: boolean, message?: string }>}
+ */
+export async function summarizeBookingRequest(payload) {
+  const data = await callAi('bookingRequestSummary', payload)
+
+  return {
+    ...data.result,
+    fallbackUsed: data.fallbackUsed ?? false,
+    message: data.message,
+  }
 }

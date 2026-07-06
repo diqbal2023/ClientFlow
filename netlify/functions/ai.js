@@ -5,10 +5,11 @@
  * TRUSSED_API_KEY stays server-side in .env (local) or Netlify env vars (deploy).
  */
 
-import { callLlm, getMissingEnvVars, toUserFriendlyError } from './_shared/llmClient.js'
+import { getMissingEnvVars } from './_shared/llmClient.js'
 import { handleBusinessDescription } from './_shared/businessDescriptionHandler.js'
 import { handleServiceDescription } from './_shared/serviceDescriptionHandler.js'
 import { handleRebookingRecommendation } from './_shared/rebookingRecommendationHandler.js'
+import { handleBookingRequestSummary } from './_shared/bookingRequestSummaryHandler.js'
 
 // Allowed action names from the frontend aiClient.js
 const VALID_ACTIONS = new Set([
@@ -31,32 +32,9 @@ function jsonResponse(statusCode, body) {
 }
 
 /**
- * Build a simple placeholder prompt for actions not yet implemented in UI.
- */
-function buildPlaceholderMessages(action, payload = {}) {
-  const context = JSON.stringify(payload, null, 2)
-
-  const prompts = {
-    bookingRequestSummary: {
-      system:
-        'You summarize client booking requests for business owners. Return plain text only (2-3 sentences).',
-      user: `Summarize this booking request:\n${context}`,
-    },
-  }
-
-  const prompt = prompts[action]
-
-  return [
-    { role: 'system', content: prompt.system },
-    { role: 'user', content: prompt.user },
-  ]
-}
-
-/**
  * Main Netlify Function handler.
  */
 export async function handler(event) {
-  // Only POST is allowed — AI actions change data context and should not be GET-cacheable
   if (event.httpMethod !== 'POST') {
     return jsonResponse(405, {
       success: false,
@@ -64,7 +42,6 @@ export async function handler(event) {
     })
   }
 
-  // Parse request body
   let body
   try {
     body = JSON.parse(event.body || '{}')
@@ -107,22 +84,13 @@ export async function handler(event) {
     return jsonResponse(statusCode, responseBody)
   }
 
-  // Placeholder handlers for future issues
-  try {
-    const messages = buildPlaceholderMessages(action, payload ?? {})
-    const result = await callLlm({ messages, temperature: 0.3, maxTokens: 400 })
-
-    return jsonResponse(200, {
-      success: true,
-      action,
-      result,
-    })
-  } catch (error) {
-    console.error('AI function error:', error?.message ?? error)
-
-    return jsonResponse(500, {
-      success: false,
-      error: toUserFriendlyError(error),
-    })
+  if (action === 'bookingRequestSummary') {
+    const { statusCode, body: responseBody } = await handleBookingRequestSummary(payload ?? {})
+    return jsonResponse(statusCode, responseBody)
   }
+
+  return jsonResponse(400, {
+    success: false,
+    error: 'Unsupported AI action.',
+  })
 }
