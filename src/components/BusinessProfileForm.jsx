@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import FormAlert from './FormAlert'
 import BrandGradientPreview from './BrandGradientPreview'
+import { generateBusinessDescription } from '../lib/aiClient'
 import {
   BRAND_COLOR_PRESETS,
   DEFAULT_BRAND_COLOR,
@@ -48,14 +49,73 @@ export default function BusinessProfileForm({
   onSubmit,
   onCancel,
   loading = false,
+  services = [],
 }) {
   const [form, setForm] = useState(initialValues)
   const [validationError, setValidationError] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState('')
+  const [aiPreview, setAiPreview] = useState(null)
+  const [aiNotice, setAiNotice] = useState('')
 
   useEffect(() => {
     setForm(initialValues)
     setValidationError('')
+    setAiError('')
+    setAiPreview(null)
+    setAiNotice('')
   }, [initialValues])
+
+  function buildServicesSummary() {
+    if (!services?.length) {
+      return ''
+    }
+
+    return services.map((service) => service.name).filter(Boolean).join(', ')
+  }
+
+  async function handleGenerateDescription() {
+    setAiError('')
+    setAiNotice('')
+
+    if (!form.business_name.trim()) {
+      setAiError('Enter a business name before generating a description.')
+      return
+    }
+
+    if (!form.business_type.trim()) {
+      setAiError('Enter a business type before generating a description.')
+      return
+    }
+
+    setAiLoading(true)
+
+    try {
+      const result = await generateBusinessDescription({
+        business_name: form.business_name.trim(),
+        business_type: form.business_type.trim(),
+        services_summary: buildServicesSummary(),
+        tone: 'professional and friendly',
+      })
+
+      setForm((current) => ({ ...current, description: result.description }))
+      setAiPreview({
+        tagline: result.tagline,
+        welcome_message: result.welcome_message,
+      })
+
+      if (result.fallbackUsed) {
+        setAiNotice(
+          result.message ||
+            'A basic template was used because AI generation was unavailable. You can edit the text before saving.',
+        )
+      }
+    } catch (error) {
+      setAiError(error.message || 'Could not generate a description. Please try again.')
+    } finally {
+      setAiLoading(false)
+    }
+  }
 
   function handleChange(event) {
     const { name, value } = event.target
@@ -114,16 +174,40 @@ export default function BusinessProfileForm({
         />
       </label>
 
-      <label>
-        Description
+      <div className="description-field">
+        <div className="description-field-header">
+          <span className="description-field-label">Description</span>
+          <button
+            type="button"
+            className="btn btn-secondary btn-small"
+            onClick={handleGenerateDescription}
+            disabled={loading || aiLoading}
+          >
+            {aiLoading ? 'Generating...' : 'Generate with AI'}
+          </button>
+        </div>
         <textarea
           name="description"
           value={form.description}
           onChange={handleChange}
           rows={4}
-          disabled={loading}
+          disabled={loading || aiLoading}
+          aria-label="Description"
         />
-      </label>
+        <FormAlert type="error" message={aiError} />
+        <FormAlert type="success" message={aiNotice} />
+        {aiPreview && (
+          <div className="ai-preview-card">
+            <p className="field-hint">Generated preview (not saved until you submit the form):</p>
+            <p>
+              <strong>Tagline:</strong> {aiPreview.tagline}
+            </p>
+            <p>
+              <strong>Welcome message:</strong> {aiPreview.welcome_message}
+            </p>
+          </div>
+        )}
+      </div>
 
       <fieldset className="brand-color-fieldset">
         <legend>Brand colors (up to 3)</legend>

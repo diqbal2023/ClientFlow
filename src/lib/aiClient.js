@@ -12,7 +12,7 @@ const AI_ENDPOINT = '/.netlify/functions/ai'
  *
  * @param {string} action - One of the supported action names
  * @param {object} payload - Data for the AI prompt (business info, service info, etc.)
- * @returns {Promise<{ success: boolean, action: string, result: string }>}
+ * @returns {Promise<object>} Parsed JSON response from the function
  */
 async function callAi(action, payload = {}) {
   const response = await fetch(AI_ENDPOINT, {
@@ -35,9 +35,24 @@ async function callAi(action, payload = {}) {
   return data
 }
 
-/** Generate a business description from business profile data. */
-export function generateBusinessDescription(payload) {
-  return callAi('businessDescription', payload)
+/**
+ * Generate a business description, tagline, and welcome message.
+ *
+ * @param {object} payload
+ * @param {string} payload.business_name
+ * @param {string} payload.business_type
+ * @param {string} [payload.services_summary]
+ * @param {string} [payload.tone]
+ * @returns {Promise<{ description: string, tagline: string, welcome_message: string, fallbackUsed?: boolean, message?: string }>}
+ */
+export async function generateBusinessDescription(payload) {
+  const data = await callAi('businessDescription', payload)
+
+  return {
+    ...data.result,
+    fallbackUsed: data.fallbackUsed ?? false,
+    message: data.message,
+  }
 }
 
 /** Generate a service description from service data. */

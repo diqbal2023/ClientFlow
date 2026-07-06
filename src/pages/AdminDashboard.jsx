@@ -19,6 +19,7 @@ export default function AdminDashboard() {
   const redirectMessage = location.state?.message
 
   const [business, setBusiness] = useState(null)
+  const [services, setServices] = useState([])
   const [loadingBusiness, setLoadingBusiness] = useState(true)
   const [saving, setSaving] = useState(false)
   const [mode, setMode] = useState('view')
@@ -46,6 +47,18 @@ export default function AdminDashboard() {
 
     setBusiness(data)
     setMode(data ? 'view' : 'create')
+
+    if (data?.id) {
+      const { data: serviceData } = await supabase
+        .from('services')
+        .select('name, description')
+        .eq('business_id', data.id)
+        .order('created_at', { ascending: false })
+
+      setServices(serviceData ?? [])
+    } else {
+      setServices([])
+    }
   }, [profile?.id])
 
   useEffect(() => {
@@ -172,6 +185,7 @@ export default function AdminDashboard() {
                 submitLabel="Create business profile"
                 onSubmit={handleCreate}
                 loading={saving}
+                services={services}
               />
             </>
           ) : mode === 'edit' ? (
@@ -184,6 +198,7 @@ export default function AdminDashboard() {
                 onSubmit={handleUpdate}
                 onCancel={() => setMode('view')}
                 loading={saving}
+                services={services}
               />
             </>
           ) : (

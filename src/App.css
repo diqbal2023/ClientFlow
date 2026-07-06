@@ -139,6 +139,40 @@
   color: var(--text);
 }
 
+.description-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.description-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.description-field-label {
+  font-size: 0.95rem;
+  color: var(--text-h);
+}
+
+.description-field textarea {
+  width: 100%;
+}
+
+.ai-preview-card {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--accent-bg);
+}
+
+.ai-preview-card p {
+  margin: 0.35rem 0;
+}
+
 .brand-color-presets {
   display: flex;
   flex-wrap: wrap;

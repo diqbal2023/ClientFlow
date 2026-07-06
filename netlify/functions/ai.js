@@ -6,6 +6,7 @@
  */
 
 import { callLlm, getMissingEnvVars, toUserFriendlyError } from './_shared/llmClient.js'
+import { handleBusinessDescription } from './_shared/businessDescriptionHandler.js'
 
 // Allowed action names from the frontend aiClient.js
 const VALID_ACTIONS = new Set([
@@ -28,19 +29,12 @@ function jsonResponse(statusCode, body) {
 }
 
 /**
- * Build a simple placeholder prompt for each AI action.
- * These are minimal prompts to verify the secure pipeline works.
- * Full prompts will be added when UI features are built in later issues.
+ * Build a simple placeholder prompt for actions not yet implemented in UI.
  */
-function buildMessages(action, payload = {}) {
+function buildPlaceholderMessages(action, payload = {}) {
   const context = JSON.stringify(payload, null, 2)
 
   const prompts = {
-    businessDescription: {
-      system:
-        'You help small businesses write short, professional descriptions. Return plain text only (2-3 sentences).',
-      user: `Write a business description based on this info:\n${context}`,
-    },
     serviceDescription: {
       system:
         'You help businesses write clear service descriptions. Return plain text only (1-2 sentences).',
@@ -78,15 +72,6 @@ export async function handler(event) {
     })
   }
 
-  // Fail fast if env vars are missing (before parsing the body)
-  const missing = getMissingEnvVars()
-  if (missing.length > 0) {
-    return jsonResponse(500, {
-      success: false,
-      error: `AI is not configured. Missing environment variable(s): ${missing.join(', ')}.`,
-    })
-  }
-
   // Parse request body
   let body
   try {
@@ -107,8 +92,31 @@ export async function handler(event) {
     })
   }
 
+  // businessDescription validates its own inputs before calling the LLM
+  if (action === 'businessDescription') {
+    const missing = getMissingEnvVars()
+    if (missing.length > 0) {
+      return jsonResponse(500, {
+        success: false,
+        error: `AI is not configured. Missing environment variable(s): ${missing.join(', ')}.`,
+      })
+    }
+
+    const { statusCode, body: responseBody } = await handleBusinessDescription(payload ?? {})
+    return jsonResponse(statusCode, responseBody)
+  }
+
+  // Placeholder handlers for future issues
+  const missing = getMissingEnvVars()
+  if (missing.length > 0) {
+    return jsonResponse(500, {
+      success: false,
+      error: `AI is not configured. Missing environment variable(s): ${missing.join(', ')}.`,
+    })
+  }
+
   try {
-    const messages = buildMessages(action, payload ?? {})
+    const messages = buildPlaceholderMessages(action, payload ?? {})
     const result = await callLlm({ messages, temperature: 0.3, maxTokens: 400 })
 
     return jsonResponse(200, {

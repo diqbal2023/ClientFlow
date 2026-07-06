@@ -3,6 +3,12 @@
   publish = "dist"
   functions = "netlify/functions"
 
+# Non-secret AI defaults — available to Netlify Functions at runtime.
+# TRUSSED_API_KEY must still be set in the Netlify UI (or via `netlify env:set`).
+[build.environment]
+  TRUSSED_BASE_URL = "https://fauengtrussed.fau.edu/provider/generic"
+  LLM_MODEL = "cogito:14b"
+
 [functions]
   node_bundler = "esbuild"
 
