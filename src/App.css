@@ -2,41 +2,23 @@
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  padding: 1.25rem 1rem 2.5rem;
+  padding: var(--space-page-y) var(--space-page-x) calc(var(--space-page-y) * 1.5);
+  padding-bottom: calc(var(--space-page-y) * 1.5 + env(safe-area-inset-bottom));
   text-align: left;
   box-sizing: border-box;
 }
 
-/* Auth, landing, and other narrow pages stay readable on large screens */
 .page:not(.page-wide) {
-  max-width: 32rem;
+  max-width: var(--page-narrow);
 }
 
 .page-wide {
-  max-width: 90rem;
-}
-
-@media (min-width: 640px) {
-  .page {
-    padding: 1.5rem 1.5rem 3rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .page {
-    padding: 2rem 2.5rem 3.5rem;
-  }
-
-  .page-wide {
-    padding-left: 3rem;
-    padding-right: 3rem;
-  }
+  max-width: var(--page-max);
 }
 
 .page h1 {
   margin-top: 0;
   margin-bottom: 0.5rem;
-  font-size: clamp(1.5rem, 2.5vw, 2rem);
 }
 
 .page-subtitle {
@@ -73,12 +55,17 @@
 .auth-form select {
   width: 100%;
   max-width: 100%;
+  min-height: var(--touch-min);
   padding: 0.65rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: 6px;
   font: inherit;
   color: var(--text-h);
   background: var(--bg);
+}
+
+.auth-form textarea {
+  min-height: 6rem;
 }
 
 .request-form-section {
@@ -305,6 +292,8 @@
   border-radius: 8px;
   padding: 1rem;
   background: var(--code-bg);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .service-card h3 {
@@ -371,6 +360,10 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: var(--shadow);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .business-branded-card {
@@ -388,6 +381,10 @@
 
 .business-browse-body {
   padding: 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .business-branded-page {
@@ -450,6 +447,9 @@
   color: #111827;
   border: none;
   font-weight: 600;
+  margin-top: auto;
+  align-self: flex-start;
+  max-width: 100%;
 }
 
 .business-view-btn:hover {
@@ -507,10 +507,6 @@
   height: 180px;
   border-radius: 8px;
   margin-bottom: 1rem;
-}
-
-.business-browse-body {
-  padding: 1rem;
 }
 
 .business-browse-header,
@@ -602,12 +598,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: var(--touch-min);
   padding: 0.65rem 1rem;
   border-radius: 6px;
   border: 1px solid transparent;
   font: inherit;
   text-decoration: none;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn:disabled {
@@ -687,23 +685,13 @@
   justify-content: space-between;
   gap: 1rem;
   width: 100%;
-  max-width: 90rem;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 1rem 1rem;
+  padding: 0.75rem var(--space-page-x);
+  padding-top: calc(0.75rem + env(safe-area-inset-top));
   border-bottom: none;
   box-sizing: border-box;
-}
-
-@media (min-width: 640px) {
-  .nav {
-    padding: 1rem 1.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .nav {
-    padding: 1rem 2.5rem;
-  }
+  flex-wrap: wrap;
 }
 
 .nav-brand {
@@ -734,7 +722,12 @@
   font-size: 0.9rem;
 }
 
-@media (max-width: 480px) {
+.dashboard-split > .business-section,
+.dashboard-split > section.business-section {
+  margin: 0;
+}
+
+@media (max-width: 639px) {
   .description-field-header {
     flex-direction: column;
     align-items: stretch;
@@ -751,14 +744,66 @@
 
   .nav-links {
     justify-content: flex-start;
+    width: 100%;
+  }
+
+  .button-row {
+    flex-direction: column;
   }
 
   .button-row .btn {
-    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .brand-color-slot {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .business-browse-header,
   .business-details-header {
     flex-wrap: wrap;
+  }
+
+  .business-cover-on-brand,
+  .business-cover-lg.business-cover-on-brand {
+    height: clamp(120px, 28vw, 180px);
+  }
+
+  /* Prevent iOS zoom on input focus */
+  .auth-form input,
+  .auth-form textarea,
+  .auth-form select {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .services-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .dashboard-split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem 2rem;
+    align-items: start;
+  }
+
+  .dashboard-split > .business-section--full,
+  .dashboard-split > .info-card {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

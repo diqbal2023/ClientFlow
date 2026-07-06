@@ -2,6 +2,8 @@
 
 A customizable client portal for small businesses, built with React, Vite, and Supabase.
 
+**Live deployed application:** [https://clientflow-diqbal2023.netlify.app/](https://clientflow-diqbal2023.netlify.app/)
+
 ---
 
 ## 1. Project Overview
@@ -247,7 +249,7 @@ Open the URL shown in the terminal (`http://localhost:8888` with Netlify Dev).
 |------|-------|
 | **Deployment platform** | Netlify |
 | **Netlify site name** | `clientflow-diqbal2023` |
-| **Live URL** | [PASTE LIVE URL HERE] |
+| **Live URL** | [https://clientflow-diqbal2023.netlify.app/](https://clientflow-diqbal2023.netlify.app/) |
 | **Build command** | `npm run build` |
 | **Publish directory** | `dist` |
 | **Functions directory** | `netlify/functions` |

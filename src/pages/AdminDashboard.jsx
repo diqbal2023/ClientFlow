@@ -164,7 +164,7 @@ export default function AdminDashboard() {
         <FormAlert type="success" message={message} />
         <FormAlert type="error" message={error} />
 
-        <section className="info-card">
+        <section className="info-card business-section--full">
           <p>
             <strong>Role:</strong> {profile?.role}
           </p>
@@ -173,7 +173,7 @@ export default function AdminDashboard() {
           </p>
         </section>
 
-        <section className="business-section">
+        <section className="business-section business-section--full">
           <h2>Business profile</h2>
 
           {loadingBusiness ? (
@@ -226,9 +226,10 @@ export default function AdminDashboard() {
           )}
         </section>
 
-        <ServicesManager business={business} />
-
-        <AdminBookingRequests business={business} />
+        <div className="dashboard-split">
+          <ServicesManager business={business} />
+          <AdminBookingRequests business={business} />
+        </div>
 
         <div className="button-row">
           <Link className="btn btn-secondary" to="/">

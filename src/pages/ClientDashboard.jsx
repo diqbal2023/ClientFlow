@@ -21,7 +21,7 @@ export default function ClientDashboard() {
 
         {redirectMessage && <p className="form-message success">{redirectMessage}</p>}
 
-        <section className="info-card">
+        <section className="info-card business-section--full">
           <p>
             <strong>Role:</strong> {profile?.role}
           </p>
@@ -30,14 +30,15 @@ export default function ClientDashboard() {
           </p>
         </section>
 
-        <section className="business-section">
+        <section className="business-section business-section--full">
           <h2>Browse businesses</h2>
           <BusinessesList />
         </section>
 
-        <RebookingRecommendation />
-
-        <MyRequestsList />
+        <div className="dashboard-split">
+          <RebookingRecommendation />
+          <MyRequestsList />
+        </div>
 
         <div className="button-row">
           <Link className="btn btn-secondary" to="/">
