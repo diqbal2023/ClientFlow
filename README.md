@@ -1,7 +1,3 @@
-
-
-https://github.com/user-attachments/assets/ab804d84-c958-494e-9c16-9539296cc036
-
 # ClientFlow
 
 A customizable client portal for small businesses, built with React, Vite, and Supabase.
