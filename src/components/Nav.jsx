@@ -12,7 +12,7 @@ export default function Nav() {
       </Link>
 
       <div className="nav-links">
-        <Link to="/">Landing</Link>
+        <Link to="/">Home</Link>
 
         {!isLoggedIn ? (
           <>
