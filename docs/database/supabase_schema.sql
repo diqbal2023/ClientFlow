@@ -46,6 +46,8 @@ create table if not exists public.services (
   price numeric(10, 2),
   price_range text,
   duration_minutes integer,
+  recommended_interval_days integer
+    check (recommended_interval_days is null or recommended_interval_days > 0),
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

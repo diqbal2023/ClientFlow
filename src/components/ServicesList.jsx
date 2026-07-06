@@ -25,6 +25,12 @@ export default function ServicesList({ services, onEdit, onDelete, deletingId })
             <strong>Duration:</strong>{' '}
             {service.duration_minutes ? `${service.duration_minutes} minutes` : 'Not set'}
           </p>
+          <p>
+            <strong>Rebook every:</strong>{' '}
+            {service.recommended_interval_days
+              ? `${service.recommended_interval_days} days`
+              : 'Not set'}
+          </p>
 
           <div className="button-row">
             <button type="button" className="btn btn-secondary" onClick={() => onEdit(service)}>

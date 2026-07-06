@@ -8,6 +8,7 @@
 import { callLlm, getMissingEnvVars, toUserFriendlyError } from './_shared/llmClient.js'
 import { handleBusinessDescription } from './_shared/businessDescriptionHandler.js'
 import { handleServiceDescription } from './_shared/serviceDescriptionHandler.js'
+import { handleRebookingRecommendation } from './_shared/rebookingRecommendationHandler.js'
 
 // Allowed action names from the frontend aiClient.js
 const VALID_ACTIONS = new Set([
@@ -36,11 +37,6 @@ function buildPlaceholderMessages(action, payload = {}) {
   const context = JSON.stringify(payload, null, 2)
 
   const prompts = {
-    rebookingRecommendation: {
-      system:
-        'You suggest friendly rebooking messages for service businesses. Return plain text only (1-2 sentences).',
-      user: `Suggest a rebooking recommendation based on this booking history:\n${context}`,
-    },
     bookingRequestSummary: {
       system:
         'You summarize client booking requests for business owners. Return plain text only (2-3 sentences).',
@@ -103,6 +99,11 @@ export async function handler(event) {
 
   if (action === 'serviceDescription') {
     const { statusCode, body: responseBody } = await handleServiceDescription(payload ?? {})
+    return jsonResponse(statusCode, responseBody)
+  }
+
+  if (action === 'rebookingRecommendation') {
+    const { statusCode, body: responseBody } = await handleRebookingRecommendation(payload ?? {})
     return jsonResponse(statusCode, responseBody)
   }
 

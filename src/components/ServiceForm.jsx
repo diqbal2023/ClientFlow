@@ -156,6 +156,23 @@ export default function ServiceForm({
         />
       </label>
 
+      <label>
+        Recommended rebooking interval (days)
+        <input
+          type="number"
+          name="recommended_interval_days"
+          value={form.recommended_interval_days}
+          onChange={handleChange}
+          min="1"
+          step="1"
+          placeholder="e.g. 14"
+          disabled={formDisabled}
+        />
+        <span className="field-hint">
+          Optional: number of days before clients may want to book this service again.
+        </span>
+      </label>
+
       <label className="checkbox-label">
         <input
           type="checkbox"

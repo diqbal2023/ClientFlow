@@ -173,6 +173,10 @@
   margin: 0.35rem 0;
 }
 
+.rebooking-result {
+  margin-top: 1rem;
+}
+
 .brand-color-presets {
   display: flex;
   flex-wrap: wrap;

@@ -14,18 +14,30 @@ export default function RequestForm({
   businessName,
   services = [],
   initialServiceId = '',
+  initialRequestTitle = '',
+  initialRequestDetails = '',
   onSuccess,
 }) {
   const { profile } = useAuth()
-  const [form, setForm] = useState({ ...emptyRequestForm, service_id: initialServiceId })
+  const [form, setForm] = useState({
+    ...emptyRequestForm,
+    service_id: initialServiceId,
+    request_title: initialRequestTitle,
+    request_details: initialRequestDetails,
+  })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [validationError, setValidationError] = useState('')
 
   useEffect(() => {
-    setForm((current) => ({ ...current, service_id: initialServiceId }))
-  }, [initialServiceId])
+    setForm((current) => ({
+      ...current,
+      service_id: initialServiceId,
+      request_title: initialRequestTitle || current.request_title,
+      request_details: initialRequestDetails || current.request_details,
+    }))
+  }, [initialServiceId, initialRequestTitle, initialRequestDetails])
 
   function handleChange(event) {
     const { name, value } = event.target

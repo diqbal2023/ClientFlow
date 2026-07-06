@@ -3,6 +3,7 @@ import BusinessesList from '../components/BusinessesList'
 import LogoutButton from '../components/LogoutButton'
 import MyRequestsList from '../components/MyRequestsList'
 import PageLayout from '../components/PageLayout'
+import RebookingRecommendation from '../components/RebookingRecommendation'
 import { useAuth } from '../context/AuthContext'
 
 export default function ClientDashboard() {
@@ -33,6 +34,8 @@ export default function ClientDashboard() {
           <h2>Browse businesses</h2>
           <BusinessesList />
         </section>
+
+        <RebookingRecommendation />
 
         <MyRequestsList />
 

@@ -76,9 +76,19 @@ export async function generateServiceDescription(payload) {
   }
 }
 
-/** Generate a rebooking recommendation from booking history data. */
-export function generateRebookingRecommendation(payload) {
-  return callAi('rebookingRecommendation', payload)
+/**
+ * Generate a rebooking recommendation for a client.
+ *
+ * @returns {Promise<{ recommendation: string, reason: string, suggested_request_details: string, fallbackUsed?: boolean, message?: string }>}
+ */
+export async function generateRebookingRecommendation(payload) {
+  const data = await callAi('rebookingRecommendation', payload)
+
+  return {
+    ...data.result,
+    fallbackUsed: data.fallbackUsed ?? false,
+    message: data.message,
+  }
 }
 
 /** Summarize a client booking request for the business owner. */

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import BusinessDetails from '../components/BusinessDetails'
 import LogoutButton from '../components/LogoutButton'
 import PageLayout from '../components/PageLayout'
@@ -11,12 +11,20 @@ import { supabase } from '../lib/supabaseClient'
 
 export default function BusinessDetailsPage() {
   const { businessId } = useParams()
+  const location = useLocation()
+  const suggestionState = location.state ?? {}
   const [business, setBusiness] = useState(null)
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [servicesError, setServicesError] = useState('')
-  const [selectedServiceId, setSelectedServiceId] = useState('')
+  const [selectedServiceId, setSelectedServiceId] = useState(suggestionState.initialServiceId ?? '')
+
+  useEffect(() => {
+    if (suggestionState.initialServiceId) {
+      setSelectedServiceId(suggestionState.initialServiceId)
+    }
+  }, [suggestionState.initialServiceId])
 
   useEffect(() => {
     async function loadBusinessDetails() {
@@ -94,6 +102,8 @@ export default function BusinessDetailsPage() {
               businessName={business.name}
               services={services}
               initialServiceId={selectedServiceId}
+              initialRequestTitle={suggestionState.initialRequestTitle ?? ''}
+              initialRequestDetails={suggestionState.initialRequestDetails ?? ''}
             />
           </>
         )}
