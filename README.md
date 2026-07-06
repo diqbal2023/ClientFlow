@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/ab804d84-c958-494e-9c16-9539296cc036
+
 # ClientFlow
 
 A customizable client portal for small businesses, built with React, Vite, and Supabase.
@@ -287,10 +291,8 @@ Cursor and VS Code AI tools were used to support project setup, documentation, d
 
 ## 12. Demo Video
 
-**Demo Video:** <video src="./ClientFlow_Demo..mp4" controls width="700">
-  Your browser does not support the video tag.
-</video>
----
+**Demo Video:** https://github.com/user-attachments/assets/70a4de83-58d2-42ba-9b78-dcc99568bbde
+
 
 ## 13. Future Enhancements
 
