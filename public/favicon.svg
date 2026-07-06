@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="ClientFlow">
+  <defs>
+    <linearGradient id="clientflow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="50%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#ec4899" />
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="url(#clientflow-gradient)" />
+  <path
+    fill="#ffffff"
+    d="M8 9h9.2c4.2 0 7 2.6 7 6.4 0 3.8-2.8 6.4-7 6.4H12v5H8V9zm4 4.2v4.2h4.8c1.6 0 2.6-.9 2.6-2.1S18.4 13.2 16.8 13.2H12z"
+  />
+</svg>
