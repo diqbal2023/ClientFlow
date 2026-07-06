@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import FormAlert from './FormAlert'
+import { generateServiceDescription } from '../lib/aiClient'
 import { emptyServiceForm, validateServiceForm } from '../lib/serviceProfile'
 
 export default function ServiceForm({
@@ -8,9 +9,22 @@ export default function ServiceForm({
   onSubmit,
   onCancel,
   loading = false,
+  businessType = '',
 }) {
   const [form, setForm] = useState(initialValues)
   const [validationError, setValidationError] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState('')
+  const [aiPreview, setAiPreview] = useState(null)
+  const [aiNotice, setAiNotice] = useState('')
+
+  useEffect(() => {
+    setForm(initialValues)
+    setValidationError('')
+    setAiError('')
+    setAiPreview(null)
+    setAiNotice('')
+  }, [initialValues])
 
   function handleChange(event) {
     const { name, value, type, checked } = event.target
@@ -18,6 +32,42 @@ export default function ServiceForm({
       ...current,
       [name]: type === 'checkbox' ? checked : value,
     }))
+  }
+
+  async function handleGenerateDescription() {
+    setAiError('')
+    setAiNotice('')
+
+    if (!form.service_name.trim()) {
+      setAiError('Enter a service name before generating a description.')
+      return
+    }
+
+    setAiLoading(true)
+
+    try {
+      const result = await generateServiceDescription({
+        service_name: form.service_name.trim(),
+        business_type: businessType.trim() || undefined,
+        price_range: form.price_range.trim() || undefined,
+        duration_minutes: form.duration_minutes.trim() || undefined,
+        tone: 'professional and friendly',
+      })
+
+      setForm((current) => ({ ...current, description: result.description }))
+      setAiPreview({ short_summary: result.short_summary })
+
+      if (result.fallbackUsed) {
+        setAiNotice(
+          result.message ||
+            'A basic template was used because AI generation was unavailable. You can edit the text before saving.',
+        )
+      }
+    } catch (error) {
+      setAiError(error.message || 'Could not generate a description. Please try again.')
+    } finally {
+      setAiLoading(false)
+    }
   }
 
   async function handleSubmit(event) {
@@ -33,6 +83,8 @@ export default function ServiceForm({
     await onSubmit(form)
   }
 
+  const formDisabled = loading || aiLoading
+
   return (
     <form className="auth-form service-form" onSubmit={handleSubmit}>
       <label>
@@ -43,18 +95,41 @@ export default function ServiceForm({
           value={form.service_name}
           onChange={handleChange}
           required
+          disabled={formDisabled}
         />
       </label>
 
-      <label>
-        Description
+      <div className="description-field">
+        <div className="description-field-header">
+          <span className="description-field-label">Description</span>
+          <button
+            type="button"
+            className="btn btn-secondary btn-small"
+            onClick={handleGenerateDescription}
+            disabled={formDisabled}
+          >
+            {aiLoading ? 'Generating...' : 'Generate Description'}
+          </button>
+        </div>
         <textarea
           name="description"
           value={form.description}
           onChange={handleChange}
           rows={3}
+          disabled={formDisabled}
+          aria-label="Description"
         />
-      </label>
+        <FormAlert type="error" message={aiError} />
+        <FormAlert type="success" message={aiNotice} />
+        {aiPreview && (
+          <div className="ai-preview-card">
+            <p className="field-hint">Generated preview (not saved until you submit the form):</p>
+            <p>
+              <strong>Short summary:</strong> {aiPreview.short_summary}
+            </p>
+          </div>
+        )}
+      </div>
 
       <label>
         Price range
@@ -64,6 +139,7 @@ export default function ServiceForm({
           value={form.price_range}
           onChange={handleChange}
           placeholder="e.g. $50-$100"
+          disabled={formDisabled}
         />
       </label>
 
@@ -76,6 +152,7 @@ export default function ServiceForm({
           onChange={handleChange}
           min="1"
           placeholder="e.g. 60"
+          disabled={formDisabled}
         />
       </label>
 
@@ -85,6 +162,7 @@ export default function ServiceForm({
           name="is_active"
           checked={form.is_active}
           onChange={handleChange}
+          disabled={formDisabled}
         />
         Service is active
       </label>
@@ -92,11 +170,11 @@ export default function ServiceForm({
       {validationError && <FormAlert type="error" message={validationError} />}
 
       <div className="button-row">
-        <button type="submit" className="btn btn-primary" disabled={loading}>
+        <button type="submit" className="btn btn-primary" disabled={formDisabled}>
           {loading ? 'Saving...' : submitLabel}
         </button>
         {onCancel && (
-          <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={loading}>
+          <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={formDisabled}>
             Cancel
           </button>
         )}

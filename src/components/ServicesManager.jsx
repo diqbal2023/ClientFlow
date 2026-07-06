@@ -161,6 +161,7 @@ export default function ServicesManager({ business }) {
                 onSubmit={handleUpdate}
                 onCancel={() => setEditingService(null)}
                 loading={saving}
+                businessType={business.business_type ?? ''}
               />
             </>
           ) : showCreateForm ? (
@@ -171,6 +172,7 @@ export default function ServicesManager({ business }) {
                 onSubmit={handleCreate}
                 onCancel={() => setShowCreateForm(false)}
                 loading={saving}
+                businessType={business.business_type ?? ''}
               />
             </>
           ) : (

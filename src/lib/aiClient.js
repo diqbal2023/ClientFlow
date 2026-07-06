@@ -55,9 +55,25 @@ export async function generateBusinessDescription(payload) {
   }
 }
 
-/** Generate a service description from service data. */
-export function generateServiceDescription(payload) {
-  return callAi('serviceDescription', payload)
+/**
+ * Generate a service description and short summary.
+ *
+ * @param {object} payload
+ * @param {string} payload.service_name
+ * @param {string} [payload.business_type]
+ * @param {string} [payload.price_range]
+ * @param {string|number} [payload.duration_minutes]
+ * @param {string} [payload.tone]
+ * @returns {Promise<{ description: string, short_summary: string, fallbackUsed?: boolean, message?: string }>}
+ */
+export async function generateServiceDescription(payload) {
+  const data = await callAi('serviceDescription', payload)
+
+  return {
+    ...data.result,
+    fallbackUsed: data.fallbackUsed ?? false,
+    message: data.message,
+  }
 }
 
 /** Generate a rebooking recommendation from booking history data. */
