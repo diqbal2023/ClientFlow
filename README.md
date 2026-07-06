@@ -287,7 +287,7 @@ Cursor and VS Code AI tools were used to support project setup, documentation, d
 
 ## 12. Demo Video
 
-**Demo Video:** [PASTE DEMO VIDEO LINK HERE]
+**Demo Video:** [ClientFlow_Demo.mp4]
 
 ---
 
