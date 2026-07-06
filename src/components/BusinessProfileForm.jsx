@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import FormAlert from './FormAlert'
 import BrandGradientPreview from './BrandGradientPreview'
 import { generateBusinessDescription } from '../lib/aiClient'
+import { formatAiError, logAiError } from '../lib/aiErrors'
 import {
   BRAND_COLOR_PRESETS,
   DEFAULT_BRAND_COLOR,
@@ -111,7 +112,8 @@ export default function BusinessProfileForm({
         )
       }
     } catch (error) {
-      setAiError(error.message || 'Could not generate a description. Please try again.')
+      logAiError('businessDescription', error)
+      setAiError(formatAiError({ message: error.message }))
     } finally {
       setAiLoading(false)
     }
@@ -196,6 +198,11 @@ export default function BusinessProfileForm({
         />
         <FormAlert type="error" message={aiError} />
         <FormAlert type="success" message={aiNotice} />
+        {aiLoading && (
+          <p className="loading-text" role="status">
+            Generating business description...
+          </p>
+        )}
         {aiPreview && (
           <div className="ai-preview-card">
             <p className="field-hint">Generated preview (not saved until you submit the form):</p>

@@ -221,7 +221,7 @@ export default function MyRequestsList() {
       <FormAlert type="error" message={error} />
 
       {requests.length === 0 ? (
-        <EmptyState message="You have not submitted any booking requests yet. Browse a business and submit a request." />
+        <EmptyState message="You have not submitted any booking requests yet. Browse a business and submit a booking request." />
       ) : (
         <ul className="services-list">
           {requests.map((request) => {
@@ -240,7 +240,7 @@ export default function MyRequestsList() {
                 ) : (
                   <>
                     <div className="service-card-header">
-                      <h3>{request.request_title || 'Untitled request'}</h3>
+                      <h3>{request.request_title || 'Untitled booking request'}</h3>
                       <span
                         className={`status-badge${request.status === 'canceled' ? '' : ' is-active'}`}
                       >
@@ -279,7 +279,7 @@ export default function MyRequestsList() {
                           onClick={() => handleCancel(request)}
                           disabled={saving}
                         >
-                          Cancel request
+                          Cancel booking request
                         </button>
                         <button
                           type="button"

@@ -134,7 +134,7 @@ export default function RequestForm({
               onChange={handleChange}
               disabled={loading}
             >
-              <option value="">General request (no specific service)</option>
+              <option value="">General booking request (no specific service)</option>
               {services.map((service) => (
                 <option key={service.id} value={service.id}>
                   {service.name}

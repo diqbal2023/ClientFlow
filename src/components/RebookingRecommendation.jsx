@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { generateRebookingRecommendation } from '../lib/aiClient'
+import { formatAiError, logAiError } from '../lib/aiErrors'
 import { getFriendlyError } from '../lib/formUtils'
 import {
   buildRebookingAiPayload,
@@ -82,7 +83,8 @@ export default function RebookingRecommendation() {
         )
       }
     } catch (error) {
-      setAiError(error.message || 'Could not generate a recommendation. Please try again.')
+      logAiError('rebookingRecommendation', error)
+      setAiError(formatAiError({ message: error.message }))
     } finally {
       setGenerating(false)
     }
@@ -103,7 +105,7 @@ export default function RebookingRecommendation() {
       {loadingHistory ? (
         <p className="loading-text">Loading your booking history...</p>
       ) : !canRecommend ? (
-        <EmptyState message="You do not have any booking history yet. Submit a request to a business first, then come back for rebooking suggestions." />
+        <EmptyState message="You do not have any booking history yet. Submit a booking request to a business first, then come back for rebooking suggestions." />
       ) : (
         <>
           <div className="button-row">

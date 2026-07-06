@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import FormAlert from './FormAlert'
 import { generateServiceDescription } from '../lib/aiClient'
+import { formatAiError, logAiError } from '../lib/aiErrors'
 import { emptyServiceForm, validateServiceForm } from '../lib/serviceProfile'
 
 export default function ServiceForm({
@@ -64,7 +65,8 @@ export default function ServiceForm({
         )
       }
     } catch (error) {
-      setAiError(error.message || 'Could not generate a description. Please try again.')
+      logAiError('serviceDescription', error)
+      setAiError(formatAiError({ message: error.message }))
     } finally {
       setAiLoading(false)
     }
@@ -121,6 +123,11 @@ export default function ServiceForm({
         />
         <FormAlert type="error" message={aiError} />
         <FormAlert type="success" message={aiNotice} />
+        {aiLoading && (
+          <p className="loading-text" role="status">
+            Generating service description...
+          </p>
+        )}
         {aiPreview && (
           <div className="ai-preview-card">
             <p className="field-hint">Generated preview (not saved until you submit the form):</p>

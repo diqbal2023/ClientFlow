@@ -75,7 +75,11 @@ export function toUserFriendlyError(error) {
   }
 
   if (error?.code === 'MISSING_ENV') {
-    return `AI is not configured. Missing: ${error.missing?.join(', ') ?? 'environment variables'}.`
+    return 'AI is not configured on the server. Contact the site administrator.'
+  }
+
+  if (error?.code === 'INVALID_JSON') {
+    return 'The AI returned an invalid response. Please try again.'
   }
 
   return 'The AI request failed. Please try again later.'

@@ -7,6 +7,7 @@ import {
   formatRequestStatus,
 } from '../lib/clientRequest'
 import { summarizeBookingRequest } from '../lib/aiClient'
+import { formatAiError, logAiError } from '../lib/aiErrors'
 import { getFriendlyError } from '../lib/formUtils'
 import { supabase } from '../lib/supabaseClient'
 
@@ -153,10 +154,10 @@ export default function AdminBookingRequests({ business }) {
         }))
       }
     } catch (summaryError) {
+      logAiError('bookingRequestSummary', summaryError)
       setSummaryErrors((current) => ({
         ...current,
-        [request.id]:
-          summaryError.message || 'Could not summarize this request. Please try again.',
+        [request.id]: formatAiError({ message: summaryError.message }),
       }))
     } finally {
       setSummarizingId(null)
@@ -235,6 +236,12 @@ export default function AdminBookingRequests({ business }) {
 
                 <FormAlert type="error" message={summaryErrors[request.id]} />
                 <FormAlert type="success" message={summaryNotices[request.id]} />
+
+                {isSummarizing && (
+                  <p className="loading-text" role="status">
+                    Summarizing this booking request...
+                  </p>
+                )}
 
                 {summary && (
                   <div className="ai-preview-card request-summary-card">

@@ -5,46 +5,55 @@
  * The API key is NOT in the browser; it lives server-side only.
  */
 
+import { formatAiError, logAiError } from './aiErrors.js'
+
 const AI_ENDPOINT = '/.netlify/functions/ai'
 
 /**
  * Send an AI action request to the Netlify Function.
- *
- * @param {string} action - One of the supported action names
- * @param {object} payload - Data for the AI prompt (business info, service info, etc.)
- * @returns {Promise<object>} Parsed JSON response from the function
  */
 async function callAi(action, payload = {}) {
-  const response = await fetch(AI_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action, payload }),
-  })
+  let response
+
+  try {
+    response = await fetch(AI_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, payload }),
+    })
+  } catch (error) {
+    logAiError(action, error)
+    throw new Error(formatAiError({ type: 'network' }), { cause: error })
+  }
 
   let data
   try {
     data = await response.json()
-  } catch {
-    throw new Error('AI service returned an invalid response.')
+  } catch (error) {
+    logAiError(`${action} invalid JSON response`, error)
+    throw new Error(formatAiError({ type: 'invalid_response', status: response.status }), {
+      cause: error,
+    })
   }
 
   if (!response.ok || !data.success) {
-    throw new Error(data.error || 'AI request failed.')
+    logAiError(`${action} request failed`, new Error(data.error || `HTTP ${response.status}`))
+    throw new Error(
+      formatAiError({
+        message: data.error,
+        status: response.status,
+      }),
+    )
+  }
+
+  if (!data.result) {
+    logAiError(`${action} missing result`, new Error('Empty result payload'))
+    throw new Error(formatAiError({ type: 'invalid_response', status: response.status }))
   }
 
   return data
 }
 
-/**
- * Generate a business description, tagline, and welcome message.
- *
- * @param {object} payload
- * @param {string} payload.business_name
- * @param {string} payload.business_type
- * @param {string} [payload.services_summary]
- * @param {string} [payload.tone]
- * @returns {Promise<{ description: string, tagline: string, welcome_message: string, fallbackUsed?: boolean, message?: string }>}
- */
 export async function generateBusinessDescription(payload) {
   const data = await callAi('businessDescription', payload)
 
@@ -55,17 +64,6 @@ export async function generateBusinessDescription(payload) {
   }
 }
 
-/**
- * Generate a service description and short summary.
- *
- * @param {object} payload
- * @param {string} payload.service_name
- * @param {string} [payload.business_type]
- * @param {string} [payload.price_range]
- * @param {string|number} [payload.duration_minutes]
- * @param {string} [payload.tone]
- * @returns {Promise<{ description: string, short_summary: string, fallbackUsed?: boolean, message?: string }>}
- */
 export async function generateServiceDescription(payload) {
   const data = await callAi('serviceDescription', payload)
 
@@ -76,11 +74,6 @@ export async function generateServiceDescription(payload) {
   }
 }
 
-/**
- * Generate a rebooking recommendation for a client.
- *
- * @returns {Promise<{ recommendation: string, reason: string, suggested_request_details: string, fallbackUsed?: boolean, message?: string }>}
- */
 export async function generateRebookingRecommendation(payload) {
   const data = await callAi('rebookingRecommendation', payload)
 
@@ -91,11 +84,6 @@ export async function generateRebookingRecommendation(payload) {
   }
 }
 
-/**
- * Summarize a client booking request for the business admin.
- *
- * @returns {Promise<{ summary: string, key_details: string[], suggested_next_step: string, fallbackUsed?: boolean, message?: string }>}
- */
 export async function summarizeBookingRequest(payload) {
   const data = await callAi('bookingRequestSummary', payload)
 

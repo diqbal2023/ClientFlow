@@ -43,6 +43,19 @@ Admins can customize how their business appears to clients using:
 - **Admin booking status updates** — Review incoming requests and update status (for example pending, confirmed, completed, canceled)
 - **Validation, loading states, error messages, and empty states** — Form validation, friendly error handling, loading indicators, and empty-state messaging across the app
 
+### Week 3 AI features
+
+All AI features call the server-side Netlify Function at `/.netlify/functions/ai`. The Trussed API key is **never** exposed to the browser.
+
+| Feature | Who | What it does |
+|---------|-----|--------------|
+| **AI Business Description Generator** | Admin | Generates description, tagline, and welcome message preview from business details |
+| **AI Service Description Generator** | Admin | Generates service description and short summary from service details |
+| **AI Client Rebooking Recommendation** | Client | Suggests rebooking based on past booking requests and `recommended_interval_days` |
+| **AI Booking Request Summary** | Admin | Summarizes an individual booking request with key details and suggested next step |
+
+See [API_DOCUMENTATION.md](API_DOCUMENTATION.md), [TESTING.md](TESTING.md), and [COST_ANALYSIS.md](COST_ANALYSIS.md) for details.
+
 ---
 
 ## 3. Tech Stack
@@ -56,13 +69,14 @@ Admins can customize how their business appears to clients using:
 | Database | [Supabase PostgreSQL](https://supabase.com/docs/guides/database) |
 | Language | JavaScript |
 | Styling | CSS (`src/App.css`, `src/index.css`) |
-| Deployment | [Netlify](https://www.netlify.com/) |
+| Deployment | [Netlify](https://www.netlify.com/) (SPA + serverless functions) |
+| AI (Week 3) | [FAU Trussed.ai](https://trussed.hpc.fau.edu) via Netlify Functions |
 
 ---
 
 ## 4. Architecture Overview
 
-ClientFlow is a React single-page application that talks directly to Supabase for authentication and data storage. There is no custom backend server.
+ClientFlow is a React single-page application that talks to **Supabase** for authentication and data, and to **Netlify Functions** for AI features.
 
 **React / Vite frontend** — Handles pages, forms, and UI state. Key areas include `src/pages/` for views, `src/components/` for reusable UI, and `src/context/AuthContext.jsx` for session and profile state. `src/App.jsx` defines routes and wires protected pages.
 
@@ -70,7 +84,9 @@ ClientFlow is a React single-page application that talks directly to Supabase fo
 
 **Supabase PostgreSQL** — Stores application data in `profiles`, `businesses`, `services`, and `client_requests`. Row Level Security (RLS) policies control who can read and write each table. The executable schema lives in [`docs/database/supabase_schema.sql`](docs/database/supabase_schema.sql).
 
-**Protected routes and role-based dashboards** — `ProtectedRoute` requires a signed-in user. Admin routes (`/admin`) require `profile.role === 'admin'`. Client routes (`/client`, `/client/business/:businessId`) require `profile.role === 'client'`. The `/dashboard` route redirects users to the correct dashboard based on role. This keeps admin management workflows separate from the client booking experience.
+**Netlify Functions (AI)** — `netlify/functions/ai.js` proxies AI requests to FAU Trussed.ai. The frontend calls `/.netlify/functions/ai`; `TRUSSED_API_KEY` stays server-side only.
+
+**Protected routes and role-based dashboards** — `ProtectedRoute` requires a signed-in user. Admin routes (`/admin`) require `profile.role === 'admin'`. Client routes (`/client`, `/client/business/:businessId`) require `profile.role === 'client'`. The `/dashboard` route redirects users to the correct dashboard based on role.
 
 ---
 
@@ -94,7 +110,7 @@ Stores each admin’s branded business profile. One admin profile may own one bu
 
 Stores services offered by a business.
 
-**Important fields:** `business_id`, `name`, `description`, `price`, `price_range`, `duration_minutes`, `is_active`
+**Important fields:** `business_id`, `name`, `description`, `price`, `price_range`, `duration_minutes`, `recommended_interval_days`, `is_active`
 
 ### `client_requests`
 
@@ -169,26 +185,34 @@ npm install
 cp .env.example .env
 ```
 
-2. Add your Supabase values to `.env`:
+2. Add your values to `.env`:
 
 ```env
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Server-side only (Netlify Functions) — never use VITE_ prefix
+TRUSSED_API_KEY=your_trussed_api_key
+TRUSSED_BASE_URL=https://fauengtrussed.fau.edu/provider/generic
+LLM_MODEL=cogito:14b
 ```
 
-Find these in the Supabase dashboard under **Project Settings → API**.
+Find Supabase values in the dashboard under **Project Settings → API**. Get `TRUSSED_API_KEY` from [trussed.hpc.fau.edu](https://trussed.hpc.fau.edu). **Do not commit `.env`.**
 
 ### Database setup
 
 Run the SQL in [`docs/database/supabase_schema.sql`](docs/database/supabase_schema.sql) in your Supabase **SQL Editor** to create tables and RLS policies.
 
+If upgrading an existing database, also run [`docs/database/migrations/add_recommended_interval_days.sql`](docs/database/migrations/add_recommended_interval_days.sql).
+
 ### Run locally
 
 ```bash
-npm run dev
+npm run dev          # frontend only (Supabase works; AI functions do not)
+npx netlify dev      # recommended — frontend + Netlify Functions + AI
 ```
 
-Open the URL shown in the terminal (typically `http://localhost:5173`).
+Open the URL shown in the terminal (`http://localhost:8888` with Netlify Dev).
 
 ---
 
@@ -202,6 +226,8 @@ Open the URL shown in the terminal (typically `http://localhost:5173`).
 4. Add services
 5. View booking requests on the admin dashboard
 6. Update booking request status (for example pending, confirmed, completed, canceled)
+7. Use **Generate with AI** on the business profile and **Generate Description** on services
+8. Use **Summarize Request** on individual booking request cards
 
 ### Client flow
 
@@ -210,7 +236,8 @@ Open the URL shown in the terminal (typically `http://localhost:5173`).
 3. Browse businesses on the client dashboard
 4. View services on a business detail page
 5. Submit a booking request
-6. View request history and track status
+6. View booking request history and track status
+7. Use **Suggested for You** → **Generate Recommendation** (after you have booking history)
 
 ---
 
@@ -219,28 +246,34 @@ Open the URL shown in the terminal (typically `http://localhost:5173`).
 | Item | Value |
 |------|-------|
 | **Deployment platform** | Netlify |
-| **Netlify site name** | `lively-salmiakki-70faaf` |
+| **Netlify site name** | `clientflow-diqbal2023` |
 | **Live URL** | [PASTE LIVE URL HERE] |
 | **Build command** | `npm run build` |
 | **Publish directory** | `dist` |
+| **Functions directory** | `netlify/functions` |
 
-Deployment settings are also defined in [`netlify.toml`](netlify.toml), including an SPA redirect so React Router routes work on refresh.
+Deployment settings are in [`netlify.toml`](netlify.toml), including an SPA redirect (`/*` → `/index.html`) so React Router works on refresh.
 
-### Environment variables
+### Environment variables (Netlify)
 
-`VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are configured in **Netlify site environment variables**, not committed to GitHub. Vite embeds `VITE_*` values at build time, so a new deploy is required after changing them.
+Add these in **Netlify → Site configuration → Environment variables**:
 
-For manual deploys without Git-linked builds, run `npm run build` locally (with `.env` present) and upload the `dist` folder or use:
+| Variable | Scope | Notes |
+|----------|-------|-------|
+| `VITE_SUPABASE_URL` | All | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | All | Supabase anon key |
+| `TRUSSED_API_KEY` | All | **Secret** — FAU Trussed API key |
+| `TRUSSED_BASE_URL` | All | `https://fauengtrussed.fau.edu/provider/generic` (also in `netlify.toml`) |
+| `LLM_MODEL` | All | `cogito:14b` (also in `netlify.toml`) |
+
+**Security:** Never use `VITE_TRUSSED_API_KEY`. Never commit real keys to GitHub. Redeploy after changing environment variables.
+
+For manual deploys:
 
 ```bash
+npm run build
 netlify deploy --prod --dir=dist
 ```
-
-### GitHub Classroom and CI/CD
-
-The intended setup is **continuous deployment from the `main` branch**: pushes to `main` trigger a Netlify build using `npm run build` and publish the `dist` folder.
-
-If CI/CD could not be fully linked because the **GitHub Classroom repository is private or classroom-owned**, the site may be deployed manually (folder upload or Netlify CLI) instead. In that case, link the repository in Netlify when access is available, confirm build settings match the table above, and add the required environment variables before enabling deploy-on-push from `main`.
 
 ---
 
@@ -252,7 +285,7 @@ Cursor and VS Code AI tools were used to support project setup, documentation, d
 
 ## 12. Demo Video
 
-**Demo Video:** Coming soon / [PASTE DEMO VIDEO LINK HERE]
+**Demo Video:** [PASTE DEMO VIDEO LINK HERE]
 
 ---
 
@@ -269,7 +302,11 @@ Cursor and VS Code AI tools were used to support project setup, documentation, d
 
 ## Related Documentation
 
+- [`API_DOCUMENTATION.md`](API_DOCUMENTATION.md) — Supabase operations and AI endpoint reference
+- [`TESTING.md`](TESTING.md) — Manual test cases and deployment smoke checklist
+- [`COST_ANALYSIS.md`](COST_ANALYSIS.md) — Trussed.ai usage and cost estimates
 - [`DATABASE_SCHEMA.md`](DATABASE_SCHEMA.md) — Detailed table definitions and relationships
 - [`docs/database/supabase_schema.sql`](docs/database/supabase_schema.sql) — Executable SQL schema and RLS policies
-- [`netlify.toml`](netlify.toml) — Netlify build, publish, and SPA redirect settings
+- [`docs/database/migrations/add_recommended_interval_days.sql`](docs/database/migrations/add_recommended_interval_days.sql) — Rebooking interval migration
+- [`netlify.toml`](netlify.toml) — Netlify build, publish, functions, and SPA redirect
 - [`.env.example`](.env.example) — Required environment variable template

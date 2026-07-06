@@ -65,7 +65,7 @@ export async function handler(event) {
   if (missing.length > 0) {
     return jsonResponse(500, {
       success: false,
-      error: `AI is not configured. Missing environment variable(s): ${missing.join(', ')}.`,
+      error: 'AI is not configured on the server. Contact the site administrator.',
     })
   }
 

@@ -1,19 +1,42 @@
 .page {
   width: 100%;
-  max-width: 480px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 2rem 1.5rem 3rem;
+  padding: 1.25rem 1rem 2.5rem;
   text-align: left;
+  box-sizing: border-box;
+}
+
+/* Auth, landing, and other narrow pages stay readable on large screens */
+.page:not(.page-wide) {
+  max-width: 32rem;
 }
 
 .page-wide {
-  max-width: 640px;
+  max-width: 90rem;
+}
+
+@media (min-width: 640px) {
+  .page {
+    padding: 1.5rem 1.5rem 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page {
+    padding: 2rem 2.5rem 3.5rem;
+  }
+
+  .page-wide {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
 }
 
 .page h1 {
   margin-top: 0;
   margin-bottom: 0.5rem;
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
 }
 
 .page-subtitle {
@@ -44,8 +67,12 @@
 .auth-form input[type='email'],
 .auth-form input[type='password'],
 .auth-form input[type='url'],
+.auth-form input[type='number'],
+.auth-form input[type='date'],
 .auth-form textarea,
 .auth-form select {
+  width: 100%;
+  max-width: 100%;
   padding: 0.65rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -86,7 +113,14 @@
 .status-update-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.75rem;
+}
+
+.status-update-row select {
+  flex: 1 1 12rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .status-saving {
@@ -249,9 +283,21 @@
   list-style: none;
   padding: 0;
   margin: 0 0 1rem;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .services-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .services-list {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
 }
 
 .service-card {
@@ -273,9 +319,10 @@
 
 .service-card-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .status-badge {
@@ -303,9 +350,21 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .businesses-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .businesses-list {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
 }
 
 .business-browse-card {
@@ -616,13 +675,35 @@
   gap: 0.5rem;
 }
 
+.site-header {
+  width: 100%;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
 .nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border);
+  width: 100%;
+  max-width: 90rem;
+  margin: 0 auto;
+  padding: 1rem 1rem;
+  border-bottom: none;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .nav {
+    padding: 1rem 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nav {
+    padding: 1rem 2.5rem;
+  }
 }
 
 .nav-brand {
@@ -651,4 +732,33 @@
 .nav-links .btn {
   padding: 0.4rem 0.75rem;
   font-size: 0.9rem;
+}
+
+@media (max-width: 480px) {
+  .description-field-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .description-field-header .btn {
+    width: 100%;
+  }
+
+  .nav {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nav-links {
+    justify-content: flex-start;
+  }
+
+  .button-row .btn {
+    flex: 1 1 100%;
+  }
+
+  .business-browse-header,
+  .business-details-header {
+    flex-wrap: wrap;
+  }
 }

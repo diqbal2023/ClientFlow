@@ -8,8 +8,8 @@ export default function LandingPage() {
     <main className="page">
       <h1>ClientFlow</h1>
       <p className="page-subtitle">
-        A client portal builder for small businesses. Admins manage services and requests.
-        Clients browse businesses and track their requests.
+        A client portal builder for small businesses. Admins manage services and booking requests.
+        Clients browse businesses and track their booking requests.
       </p>
 
       <div className="button-row">
